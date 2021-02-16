@@ -124,14 +124,18 @@ deconzPlatform.prototype.initWebsocket = function () {
 
                         var light = this.apiLights[d.id];
 
-                        var serviceLightbulb = light.accessory.getService(Service.Lightbulb);
-                        if (serviceLightbulb !== undefined && serviceLightbulb !== null && d.state.on !== undefined) {
-                            var v = d.state.on === true;
-                            if (light._value === undefined || light._value != v) {
-                                console.log('setting power', v, light.name);
-                                serviceLightbulb.setCharacteristic(Characteristic.On, v);
-                                light._value = v;
+                        if (light.accessory !== undefined) {
+
+                            var serviceLightbulb = light.accessory.getService(Service.Lightbulb);
+                            if (serviceLightbulb !== undefined && serviceLightbulb !== null && d.state.on !== undefined) {
+                                var v = d.state.on === true;
+                                if (light._value === undefined || light._value != v) {
+                                    console.log('setting power', v, light.name);
+                                    serviceLightbulb.setCharacteristic(Characteristic.On, v);
+                                    light._value = v;
+                                }
                             }
+
                         }
 
                         break;
@@ -142,33 +146,37 @@ deconzPlatform.prototype.initWebsocket = function () {
 
                         var sensor = this.apiSensors[d.id];
 
-                        if (sensor.type == "ZHAPresence") {
-                            var v = d.state.presence === true;
-                            if (sensor._value === undefined || sensor._value != v) {
-                                console.log('setting presence', v, sensor.name);
-                                sensor.accessory.getService(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, v)
-                                sensor._value = v;
+                        if (sensor.accessory !== undefined) {
+
+                            if (sensor.type == "ZHAPresence") {
+                                var v = d.state.presence === true;
+                                if (sensor._value === undefined || sensor._value != v) {
+                                    console.log('setting presence', v, sensor.name);
+                                    sensor.accessory.getService(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, v)
+                                    sensor._value = v;
+                                }
                             }
-                        }
 
-                        if (sensor.type == "ZHALightLevel") {
-                            console.log('setting lux', d.state.lux, sensor.name);
-                            sensor.accessory.getService(Service.LightSensor).setCharacteristic(Characteristic.CurrentAmbientLightLevel, d.state.lux)
-                        }
-
-                        if (sensor.type == "ZHATemperature") {
-                            var t = Math.round(d.state.temperature / 100 * 10) / 10;
-                            if (sensor._value === undefined || sensor._value !== t) {
-                                console.log('setting temperatur', t, sensor.name);
-                                sensor.accessory.getService(Service.TemperatureSensor).setCharacteristic(Characteristic.CurrentTemperature, t)
-                                sensor._value = t;
+                            if (sensor.type == "ZHALightLevel") {
+                                console.log('setting lux', d.state.lux, sensor.name);
+                                sensor.accessory.getService(Service.LightSensor).setCharacteristic(Characteristic.CurrentAmbientLightLevel, d.state.lux)
                             }
-                        }
 
-                        var serviceContactSensor = sensor.accessory.getService(Service.ContactSensor);
-                        if (serviceContactSensor !== undefined && serviceContactSensor !== null && d.state.open !== undefined) {
-                            console.log('setting contact sensor', (d.state.open === true), sensor.name);
-                            serviceContactSensor.setCharacteristic(Characteristic.ContactSensorState, d.state.open === true);
+                            if (sensor.type == "ZHATemperature") {
+                                var t = Math.round(d.state.temperature / 100 * 10) / 10;
+                                if (sensor._value === undefined || sensor._value !== t) {
+                                    console.log('setting temperatur', t, sensor.name);
+                                    sensor.accessory.getService(Service.TemperatureSensor).setCharacteristic(Characteristic.CurrentTemperature, t)
+                                    sensor._value = t;
+                                }
+                            }
+
+                            var serviceContactSensor = sensor.accessory.getService(Service.ContactSensor);
+                            if (serviceContactSensor !== undefined && serviceContactSensor !== null && d.state.open !== undefined) {
+                                console.log('setting contact sensor', (d.state.open === true), sensor.name);
+                                serviceContactSensor.setCharacteristic(Characteristic.ContactSensorState, d.state.open === true);
+                            }
+
                         }
 
                         break;
@@ -179,8 +187,9 @@ deconzPlatform.prototype.initWebsocket = function () {
                 }
             }
 
-        } catch (e) {
-            console.error(e.description);
+        } catch (ex) {
+            console.error(ex);
+            console.log(JSON.parse(e.data));
         }
     };
 }
