@@ -126,8 +126,12 @@ deconzPlatform.prototype.initWebsocket = function () {
 
                         var serviceLightbulb = light.accessory.getService(Service.Lightbulb);
                         if (serviceLightbulb !== undefined && serviceLightbulb !== null && d.state.on !== undefined) {
-                            console.log('setting light on/off...', light.name);
-                            serviceLightbulb.setCharacteristic(Characteristic.On, d.state.on === true);
+                            var v = d.state.on === true;
+                            if (light._value === undefined || light._value != v) {
+                                console.log('setting power', v, light.name);
+                                serviceLightbulb.setCharacteristic(Characteristic.On, v);
+                                light._value = v;
+                            }
                         }
 
                         break;
@@ -139,24 +143,31 @@ deconzPlatform.prototype.initWebsocket = function () {
                         var sensor = this.apiSensors[d.id];
 
                         if (sensor.type == "ZHAPresence") {
-                            console.log('setting presence to ' + (d.state.presence === true), sensor.name);
-                            sensor.accessory.getService(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, d.state.presence === true)
+                            var v = d.state.presence === true;
+                            if (sensor._value === undefined || sensor._value != v) {
+                                console.log('setting presence', v, sensor.name);
+                                sensor.accessory.getService(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, v)
+                                sensor._value = v;
+                            }
                         }
 
                         if (sensor.type == "ZHALightLevel") {
-                            console.log('setting lux to ' + d.state.lux, sensor.name);
+                            console.log('setting lux', d.state.lux, sensor.name);
                             sensor.accessory.getService(Service.LightSensor).setCharacteristic(Characteristic.CurrentAmbientLightLevel, d.state.lux)
                         }
 
                         if (sensor.type == "ZHATemperature") {
-                            var t = d.state.temperature / 100;
-                            console.log('setting temperatur to ' + t, sensor.name);
-                            sensor.accessory.getService(Service.TemperatureSensor).setCharacteristic(Characteristic.CurrentTemperature, t)
+                            var t = Math.round(d.state.temperature / 100 * 10) / 10;
+                            if (sensor._value === undefined || sensor._value !== t) {
+                                console.log('setting temperatur', t, sensor.name);
+                                sensor.accessory.getService(Service.TemperatureSensor).setCharacteristic(Characteristic.CurrentTemperature, t)
+                                sensor._value = t;
+                            }
                         }
 
                         var serviceContactSensor = sensor.accessory.getService(Service.ContactSensor);
                         if (serviceContactSensor !== undefined && serviceContactSensor !== null && d.state.open !== undefined) {
-                            console.log('setting contact sensor to ' + (d.state.open === true), sensor.name);
+                            console.log('setting contact sensor', (d.state.open === true), sensor.name);
                             serviceContactSensor.setCharacteristic(Characteristic.ContactSensorState, d.state.open === true);
                         }
 
@@ -276,7 +287,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setPowerOn(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light" || light.type == "Dimmable light" || light.type == "Extended color light") {
+    if (light.type == "Color temperature light" || light.type == "Dimmable light" || light.type == "Extended color light" || light.type == "Color light") {
         console.log('  adding brightness');
         service
             .addCharacteristic(new Characteristic.Brightness())
@@ -284,7 +295,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setBrightness(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light") {
+    if (light.type == "Color temperature light" || light.type == "Color light") {
         console.log('  adding color temperature');
         service
             .addCharacteristic(new Characteristic.ColorTemperature())
@@ -292,7 +303,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setColorTemperature(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Extended color light") {
+    if (light.type == "Extended color light" || light.type == "Color light") {
         
         // Characteristic.Saturation
         // Characteristic.Hue
