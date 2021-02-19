@@ -88,16 +88,16 @@ deconzPlatform.prototype.importConfig = function () {
 
 deconzPlatform.prototype.initWebsocket = function () {
     var url = 'ws://' + this.apiHost + ':' + this.apiConfig.websocketport + '/';
-    console.log('websocket connecting', url)
+    this.log.warn('websocket connecting %s', url)
 
     var client = new W3CWebSocket(url);
 
     client.onerror = function () {
-        console.error('websocket connection error', url);
+        this.log.warn('websocket connection error %s', url);
     };
 
     client.onclose = function () {
-        console.error('websocket connection closed', url);
+        this.log.warn('websocket connection closed %s', url);
     };
 
     client.onmessage = (e) => {
@@ -127,7 +127,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                             if (d.state.on !== undefined) {
                                 var v = d.state.on === true;
                                 if (light.state.on != v) {
-                                    console.log('setting power', v, light.name);
+                                    this.log.log('setting power %s for %s', v, light.name);
                                     light.state.on = v;
                                     light.accessory.getService(Service.Lightbulb).updateCharacteristic(Characteristic.On, v);
                                 }
@@ -137,7 +137,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                                 var v = d.state.bri;
                                 if (light.state.bri != v) {
                                     var p = Math.min(100, Math.round(100 / 255 * v));
-                                    console.log('setting brightness', v, p + '%', light.name);
+                                    this.log.log('setting brightness %s for %s', v, p + '%', light.name);
                                     light.state.bri = v;
                                     light.accessory.getService(Service.Lightbulb).updateCharacteristic(Characteristic.Brightness, p);
                                 }
@@ -159,7 +159,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                         if (sensor.type == "ZHAPresence") {
                             var v = d.state.presence === true;
                             if (sensor.state.presence !== v) {
-                                console.log('setting presence', v, sensor.name);
+                                this.log.log('setting presence %s for %s', v, sensor.name);
                                 sensor.state.presence = v;
                                 sensor.accessory.getService(Service.MotionSensor).updateCharacteristic(Characteristic.MotionDetected, v);
                             }
@@ -169,7 +169,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                             if (sensor.name == "Garage") {                          // TODO: add external config filter
                                 var v = Math.round(d.state.lux / 50) * 50;          // TODO: add external config for rounding
                                 if (sensor.state.lux !== v) {
-                                    console.log('setting lux', v, sensor.name);
+                                    this.log.log('setting lux %s for %s', v, sensor.name);
                                     sensor.state.lux = v;
                                     sensor.accessory.getService(Service.LightSensor).updateCharacteristic(Characteristic.CurrentAmbientLightLevel, v);
                                 }
@@ -179,7 +179,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                         if (sensor.type == "ZHATemperature") {
                             var v = Math.round(d.state.temperature / 100 / 2) * 2;      // TODO: add external config for rounding
                             if (sensor.state.temperature !== v) {
-                                console.log('setting temperatur', v, sensor.name);
+                                this.log.log('setting temperatur %s for %s', v, sensor.name);
                                 sensor.state.temperature = v;
                                 sensor.accessory.getService(Service.TemperatureSensor).updateCharacteristic(Characteristic.CurrentTemperature, v);
                             }
@@ -188,7 +188,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                         if (sensor.type == "ZHAOpenClose") {
                             var v = d.state.open === true;
                             if (sensor.state.open !== v) {
-                                console.log('setting contact state', v, sensor.name);
+                                this.log.log('setting contact state %s for %s', v, sensor.name);
                                 sensor.state.open = v;
                                 sensor.accessory.getService(Service.ContactSensor).updateCharacteristic(Characteristic.ContactSensorState, v);
                             }
@@ -203,8 +203,8 @@ deconzPlatform.prototype.initWebsocket = function () {
             }
 
         } catch (ex) {
-            console.error(ex);
-            console.log(JSON.parse(e.data));
+            this.log.warn(ex);
+            this.log.log(JSON.parse(e.data));
         }
     };
 }
@@ -236,19 +236,19 @@ deconzPlatform.prototype.importSensors = function () {
 deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
 
     if (!light.uniqueid) {
-        //console.warn('accessory.uniqueid missing', light);
+        //this.log.warn('accessory.uniqueid missing', light);
         return null;
     }
     if (light.type == "Daylight") {
-        //console.warn('ignoring ' + light.type + ' sensor for the moment');
+        //this.log.warn('ignoring ' + light.type + ' sensor for the moment');
         return null;
     }
     //if (light.type == "ZHALightLevel" && light.name != "Garage") {
-    //    //console.warn('ignoring ' + light.type + ' sensor for the moment');
+    //    //this.log.warn('ignoring ' + light.type + ' sensor for the moment');
     //    return null;
     //}
 
-    console.log('--> ' + light.name + ' (' + light.type + ')');
+    this.log.log('--> %s (%s)', light.name, light.type);
 
     var uuid = UUIDGen.generate(light.uniqueid);
 
@@ -278,7 +278,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
         case "Color temperature light":
         case "Extended color light":
         case "Dimmable light":
-        case "Color light":
+        //case "Color light":
             serviceType = Service.Lightbulb;
             break;
         case "ZHATemperature":
@@ -288,7 +288,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             serviceType = Service.LightSensor;
             break;
         default:
-            console.warn('accessory ' + light.name + ' (' + light.type + ') not supported');
+            this.log.warn('accessory %s (%s) not supported', light.name, light.type);
             return;
             break;
     }
@@ -308,21 +308,21 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setPowerOn(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light" || light.type == "Dimmable light" || light.type == "Extended color light" || light.type == "Color light") {
+    if (light.type == "Color temperature light" || light.type == "Dimmable light" || light.type == "Extended color light") {
         service
             .addCharacteristic(new Characteristic.Brightness())
             .on('get', function (callback) { this.getBrightness(light, callback) }.bind(this))
             .on('set', function (val, callback) { this.setBrightness(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light" || light.type == "Color light") {
+    if (light.type == "Color temperature light") {
         service
             .addCharacteristic(new Characteristic.ColorTemperature())
             .on('get', function (callback) { this.getColorTemperature(light, callback) }.bind(this))
             .on('set', function (val, callback) { this.setColorTemperature(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Extended color light" || light.type == "Color light") {
+    if (light.type == "Extended color light") {
         // Characteristic.Saturation
         // Characteristic.Hue
         // Color Temperature
