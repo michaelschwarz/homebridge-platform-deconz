@@ -2,13 +2,16 @@
 
 [DeCONZ REST API](http://dresden-elektronik.github.io/deconz-rest-doc/) Platform plugin for the [Homebridge](https://github.com/nfarina/homebridge) project.
 
-Tested on Raspberry Pi 3 with [RaspBee](http://www.dresden-elektronik.de/funktechnik/solutions/wireless-light-control/raspbee?L=1)
+Tested on Raspberry Pi 2/3 with [RaspBee](http://www.dresden-elektronik.de/funktechnik/solutions/wireless-light-control/raspbee?L=1)
 
 ## Currently supports
 - Accessory discovery
 - Switches On/Off
 - Light Brightness
 - Light Hue and Saturation
+- Contact Sensors
+- Temperature Sensors
+- Motion Sensors
 
 # Installation
 
@@ -16,12 +19,12 @@ Tested on Raspberry Pi 3 with [RaspBee](http://www.dresden-elektronik.de/funktec
 2. Install [REST Plugin](https://github.com/dresden-elektronik/deconz-rest-plugin)
 3. Generate [API Key](http://dresden-elektronik.github.io/deconz-rest-doc/configuration/#aquireapikey)
 4. Install homebridge using: `npm install -g homebridge`
-5. Install this plugin using: `npm install -g homebridge-platform-deconz`
+5. **TODO** Install this plugin using: `npm install -g homebridge-platform-deconz`
 6. Update your configuration file. See the sample below.
 
 # Updating
 
-1. npm update -g homebridge-platform-deconz
+1. **TODO** npm update -g homebridge-platform-deconz
 
 # Configuration
 
