@@ -92,7 +92,7 @@ deconzPlatform.prototype.reconnectWebsocket = function () {
 };
 
 deconzPlatform.prototype.initWebsocket = function () {
-	var url = 'ws://' + this.apiHost + ':' + this.apiConfig.websocketport + (new Date().getSeconds() < 30 ? '' : '1') + '/';
+	var url = 'ws://' + this.apiHost + ':' + this.apiConfig.websocketport + '/';
 
     this.client = new W3CWebSocket(url);
 	this.client.onerror = (e) => {
