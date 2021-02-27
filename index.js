@@ -152,7 +152,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                                 var v = d.state.bri;
                                 if (light.state.bri != v) {
                                     var p = Math.min(100, Math.round(100 / 255 * v));
-                                    //this.log.log('setting brightness %s for %s', v, p + '%', light.name);
+                                    this.log.log('setting brightness %s for %s', v, p + '%', light.name);
                                     light.state.bri = v;
                                     light.accessory.getService(Service.Lightbulb).updateCharacteristic(Characteristic.Brightness, p);
                                 }
@@ -181,24 +181,24 @@ deconzPlatform.prototype.initWebsocket = function () {
                         }
 
                         if (sensor.type == "ZHALightLevel") {
-                            if (sensor.name == "Garage") {												// TODO: add external config filter
-                                var v = Math.max(0.0001, Math.round(d.state.lux / 50) * 50);			// TODO: add external config for rounding
+                            if (sensor.name == "Garage") {
+                                var v = Math.max(0.0001, Math.round(d.state.lux / 50) * 50);
                                 if (sensor.state.lux !== v) {
-                                    //this.log.log('setting lux %s for %s', v, sensor.name);
+                                    this.log.log('setting lux %s for %s', v, sensor.name);
                                     sensor.state.lux = v;
                                     sensor.accessory.getService(Service.LightSensor).updateCharacteristic(Characteristic.CurrentAmbientLightLevel, v);
                                 }
                             }
                         }
 
-                        if (sensor.type == "ZHATemperature") {
-                            var v = Math.round(d.state.temperature / 100 / 2) * 2;						// TODO: add external config for rounding
-                            if (sensor.state.temperature !== v) {
-                                //this.log.log('setting temperatur %s for %s', v, sensor.name);
-                                sensor.state.temperature = v;
-                                sensor.accessory.getService(Service.TemperatureSensor).updateCharacteristic(Characteristic.CurrentTemperature, v);
-                            }
-                        }
+						if (sensor.type == "ZHATemperature") {
+							var v = Math.round(d.state.temperature / 100 / 2) * 2;
+							if (sensor.state.temperature !== v) {
+								this.log.log('setting temperatur %s for %s', v, sensor.name);
+								sensor.state.temperature = v;
+								sensor.accessory.getService(Service.TemperatureSensor).updateCharacteristic(Characteristic.CurrentTemperature, v);
+							}
+						}
 
                         if (sensor.type == "ZHAOpenClose") {
                             var v = d.state.open === true;
@@ -283,7 +283,6 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
         case "On/Off plug-in unit":
             serviceType = Service.Switch;
             break;
-        // Hue motion sensor types
         case "ZHAPresence":
             serviceType = Service.MotionSensor;
             break;
@@ -401,10 +400,12 @@ deconzPlatform.prototype.getHue = function (light, callback) {
 }
 
 deconzPlatform.prototype.setHue = function (val, light, callback) {
-	var hue = val / 360 * 65535;
-    this.putLightState(light, { "hue": hue }, function (response) {
-		callback(null);
-    })
+	var v = Math.round(val / 360 * 65535);
+	light.state.hue = v;
+	this.putLightState(light, { "hue": v }, function (response) {
+		// ...
+	});
+	callback(null);
 }
 
 deconzPlatform.prototype.getSaturation = function (light, callback) {
@@ -414,24 +415,28 @@ deconzPlatform.prototype.getSaturation = function (light, callback) {
 }
 
 deconzPlatform.prototype.setSaturation = function (val, light, callback) {
-    this.putLightState(light, { "sat": val / 100 * 255 }, function (response) {
-        callback(null)
-    })
+	var v = Math.round(val / 100 * 255);
+	lifht.state.sat = v;
+	this.putLightState(light, { "sat": v }, function (response) {
+		// ...
+	});
+	callback(null);
 }
 
 deconzPlatform.prototype.getBrightness = function (light, callback) {
     this.getLight(light, function (light) {
-        v = Math.max(100, Math.round(light.state.bri / 255 * 100));
+		v = Math.max(100, Math.round(light.state.bri / 255 * 100));
         callback(null, v);
     })
 }
 
 deconzPlatform.prototype.setBrightness = function (val, light, callback) {
-    var v = Math.min(100, Math.round(255 / 100 * val));
-    this.putLightState(light, { "bri": v }, function (response) {
-        light.state.bri = v;
-		callback(null);
-    })
+	var v = Math.round(val * 255 / 100);
+	light.state.bri = v;
+	this.putLightState(light, { "bri": v }, function (response) {
+		// ...
+	})
+	callback(null);
 }
 
 deconzPlatform.prototype.getColorTemperature = function (light, callback) {
@@ -441,9 +446,11 @@ deconzPlatform.prototype.getColorTemperature = function (light, callback) {
 }
 
 deconzPlatform.prototype.setColorTemperature = function (val, light, callback) {
+	light.state.ct = vale;
     this.putLightState(light, { "ct": val }, function (response) {
-		callback(null);
-    })
+		// ...
+	})
+	callback(null);
 }
 
 deconzPlatform.prototype.getSensorPresence = function (sensor, callback) {
