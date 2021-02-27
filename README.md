@@ -19,12 +19,8 @@ Tested on Raspberry Pi 2/3 with [RaspBee](http://www.dresden-elektronik.de/funkt
 2. Install [REST Plugin](https://github.com/dresden-elektronik/deconz-rest-plugin)
 3. Generate [API Key](http://dresden-elektronik.github.io/deconz-rest-doc/configuration/#aquireapikey)
 4. Install homebridge using: `npm install -g homebridge`
-5. **TODO** Install this plugin using: `npm install -g homebridge-platform-deconz`
+5. This plugin needs to be installed manually using `git clone`
 6. Update your configuration file. See the sample below.
-
-# Updating
-
-1. **TODO** npm update -g homebridge-platform-deconz
 
 # Configuration
 
