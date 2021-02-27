@@ -8,7 +8,7 @@ module.exports = function (homebridge) {
     Characteristic = homebridge.hap.Characteristic;
     Service = homebridge.hap.Service;
     UUIDGen = homebridge.hap.uuid;
-    homebridge.registerPlatform("homebridge-platform-deconz", "deconz", deconzPlatform, true);
+    homebridge.registerPlatform('homebridge-platform-deconz', 'deconz', deconzPlatform, true);
 };
 
 function deconzPlatform(log, config, api) {
@@ -22,7 +22,7 @@ function deconzPlatform(log, config, api) {
     this.apiHost = config['host'];
     this.apiPort = config['port'];
     this.apiKey = config['apikey'];
-    this.apiURLPrefix = `http://${this.apiHost}:${this.apiPort}/api/${this.apiKey}/`
+	this.apiURLPrefix = `http://${this.apiHost}:${this.apiPort}/api/${this.apiKey}/`;
     this.apiConfig = false
 
     this.api.on('didFinishLaunching', function () {
@@ -40,7 +40,7 @@ deconzPlatform.prototype.apiURL = function (path) {
 }
 
 deconzPlatform.prototype.getLight = function (light, callback) {
-    request.get(this.apiURL("lights/" + light.id), function (error, response, body) {
+    request.get(this.apiURL('lights/' + light.id), function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var light = JSON.parse(body)
             callback(light)
@@ -49,7 +49,7 @@ deconzPlatform.prototype.getLight = function (light, callback) {
 }
 
 deconzPlatform.prototype.putLightState = function (light, body, callback) {
-    request.put({ url: this.apiURL("lights/" + light.id + "/state"), json: true, body: body }, function (error, response, body) {
+    request.put({ url: this.apiURL('lights/' + light.id + '/state'), json: true, body: body }, function (error, response, body) {
         callback(true)
         /*
         if (!error && response.statusCode == 200) {
@@ -62,7 +62,7 @@ deconzPlatform.prototype.putLightState = function (light, body, callback) {
 
 deconzPlatform.prototype.getSensor = function (sensor, callback) {
     return new Promise((resolve, reject) => {
-        request.get(this.apiURL("sensors/" + sensor.id), function (error, response, body) {
+        request.get(this.apiURL('sensors/' + sensor.id), function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 var sensor = JSON.parse(body)
                 resolve(sensor)
@@ -171,7 +171,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                         var sensor = this.apiSensors[d.id];
                         if (sensor.accessory === undefined || sensor.accessory === null) return;
 
-                        if (sensor.type == "ZHAPresence") {
+                        if (sensor.type == 'ZHAPresence') {
                             var v = d.state.presence === true;
                             if (sensor.state.presence !== v) {
                                 this.log.log('setting presence %s for %s', v, sensor.name);
@@ -180,8 +180,8 @@ deconzPlatform.prototype.initWebsocket = function () {
                             }
                         }
 
-                        if (sensor.type == "ZHALightLevel") {
-                            if (sensor.name == "Garage") {
+                        if (sensor.type == 'ZHALightLevel') {
+                            if (sensor.name == 'Garage') {
                                 var v = Math.max(0.0001, Math.round(d.state.lux / 50) * 50);
                                 if (sensor.state.lux !== v) {
                                     this.log.log('setting lux %s for %s', v, sensor.name);
@@ -191,7 +191,7 @@ deconzPlatform.prototype.initWebsocket = function () {
                             }
                         }
 
-						if (sensor.type == "ZHATemperature") {
+						if (sensor.type == 'ZHATemperature') {
 							var v = Math.round(d.state.temperature / 100 / 2) * 2;
 							if (sensor.state.temperature !== v) {
 								this.log.log('setting temperatur %s for %s', v, sensor.name);
@@ -200,7 +200,7 @@ deconzPlatform.prototype.initWebsocket = function () {
 							}
 						}
 
-                        if (sensor.type == "ZHAOpenClose") {
+                        if (sensor.type == 'ZHAOpenClose') {
                             var v = d.state.open === true;
                             if (sensor.state.open !== v) {
                                 this.log.log('setting contact state %s for %s', v, sensor.name);
@@ -254,11 +254,11 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
         //this.log.warn('accessory.uniqueid missing', light);
         return null;
     }
-    if (light.type == "Daylight") {
+    if (light.type == 'Daylight') {
         //this.log.warn('ignoring ' + light.type + ' sensor for the moment');
         return null;
     }
-    //if (light.type == "ZHALightLevel" && light.name != "Garage") {
+    //if (light.type == 'ZHALightLevel' && light.name != 'Garage') {
     //    //this.log.warn('ignoring ' + light.type + ' sensor for the moment');
     //    return null;
     //}
@@ -269,7 +269,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
 
     accessory = this.accessories[uuid]
     if (accessory !== undefined) {      // check if we have this device already in the list
-        this.api.unregisterPlatformAccessories("homebridge-platform-deconz", "deconz", [accessory]);        // if not, remove it to re-create it later
+        this.api.unregisterPlatformAccessories('homebridge-platform-deconz', 'deconz', [accessory]);        // if not, remove it to re-create it later
     }
 
     var accessory = new Accessory(light.name, uuid);
@@ -277,28 +277,28 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
     // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js
     var serviceType = Service.Lightbulb;
     switch (light.type) {
-        case "ZHAOpenClose":
+        case 'ZHAOpenClose':
             serviceType = Service.ContactSensor;
             break;
-        case "On/Off plug-in unit":
+        case 'On/Off plug-in unit':
             serviceType = Service.Switch;
             break;
-        case "ZHAPresence":
+        case 'ZHAPresence':
             serviceType = Service.MotionSensor;
             break;
-        case "ZHALightLevel":
+        case 'ZHALightLevel':
             serviceType = Service.LightSensor;
             break;
-        case "Color temperature light":
-        case "Extended color light":
-        case "Dimmable light":
-        //case "Color light":
+        case 'Color temperature light':
+        case 'Extended color light':
+        case 'Dimmable light':
+        //case 'Color light':
             serviceType = Service.Lightbulb;
             break;
-        case "ZHATemperature":
+        case 'ZHATemperature':
             serviceType = Service.TemperatureSensor;
             break;
-        case "Daylight":
+        case 'Daylight':
             serviceType = Service.LightSensor;
             break;
         default:
@@ -322,21 +322,21 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setPowerOn(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light" || light.type == "Dimmable light" || light.type == "Extended color light") {
+    if (light.type == 'Color temperature light' || light.type == 'Dimmable light' || light.type == 'Extended color light') {
         service
             .addCharacteristic(new Characteristic.Brightness())
             .on('get', function (callback) { this.getBrightness(light, callback) }.bind(this))
             .on('set', function (val, callback) { this.setBrightness(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Color temperature light") {
+    if (light.type == 'Color temperature light') {
         service
             .addCharacteristic(new Characteristic.ColorTemperature())
             .on('get', function (callback) { this.getColorTemperature(light, callback) }.bind(this))
             .on('set', function (val, callback) { this.setColorTemperature(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "Extended color light") {
+    if (light.type == 'Extended color light') {
         // In HomeKit, colour is actually defined by two characteristics, Hue and Saturation. Most HomeKit apps provide a colour picker of some sort, hiding these characteristics. In the Hue bridge, colour is defined by the IEC 1931 colour space xy coordinates. homebridge-hue translates Hue and Saturation into xy and back.
         service
             .addCharacteristic(new Characteristic.Hue)
@@ -348,25 +348,25 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
             .on('set', function (val, callback) { this.setSaturation(val, light, callback) }.bind(this))
     }
 
-    if (light.type == "ZHAPresence") {
+    if (light.type == 'ZHAPresence') {
         service
             .getCharacteristic(Characteristic.MotionDetected)
             .on('get', (callback) => { this.getSensorPresence(light, callback) })
     }
 
-    if (light.type == "ZHALightLevel") {
+    if (light.type == 'ZHALightLevel') {
         service
             .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
             .on('get', (callback) => { this.getSensorLightLevel(light, callback) })
     }
 
-    if (light.type == "ZHATemperature") {
+    if (light.type == 'ZHATemperature') {
         service
             .getCharacteristic(Characteristic.CurrentTemperature)
             .on('get', (callback) => { this.getSensorTemperature(light, callback) })
     }
 
-    if (light.type == "ZHAOpenClose") {
+    if (light.type == 'ZHAOpenClose') {
         service
             .getCharacteristic(Characteristic.ContactSensorState)
             .on('get', (callback) => { this.getSensorContactState(light, callback) })
@@ -375,7 +375,7 @@ deconzPlatform.prototype.addDiscoveredAccessory = function (light) {
     accessory.updateReachability(true)
 
     this.accessories[accessory.UUID] = accessory;
-    this.api.registerPlatformAccessories("homebridge-platform-deconz", "deconz", [accessory]);
+    this.api.registerPlatformAccessories('homebridge-platform-deconz', 'deconz', [accessory]);
 
     return accessory
 }
@@ -387,7 +387,7 @@ deconzPlatform.prototype.getPowerOn = function (light, callback) {
 }
 
 deconzPlatform.prototype.setPowerOn = function (val, light, callback) {
-    this.putLightState(light, { "on": val == 1 }, function (response) {
+    this.putLightState(light, { 'on': val == 1 }, function (response) {
 		callback(null);
     })
 }
@@ -402,7 +402,7 @@ deconzPlatform.prototype.getHue = function (light, callback) {
 deconzPlatform.prototype.setHue = function (val, light, callback) {
 	var v = Math.round(val / 360 * 65535);
 	light.state.hue = v;
-	this.putLightState(light, { "hue": v }, function (response) {
+	this.putLightState(light, { 'hue': v }, function (response) {
 		// ...
 	});
 	callback(null);
@@ -416,8 +416,8 @@ deconzPlatform.prototype.getSaturation = function (light, callback) {
 
 deconzPlatform.prototype.setSaturation = function (val, light, callback) {
 	var v = Math.round(val / 100 * 255);
-	lifht.state.sat = v;
-	this.putLightState(light, { "sat": v }, function (response) {
+	light.state.sat = v;
+	this.putLightState(light, { 'sat': v }, function (response) {
 		// ...
 	});
 	callback(null);
@@ -433,7 +433,7 @@ deconzPlatform.prototype.getBrightness = function (light, callback) {
 deconzPlatform.prototype.setBrightness = function (val, light, callback) {
 	var v = Math.round(val * 255 / 100);
 	light.state.bri = v;
-	this.putLightState(light, { "bri": v }, function (response) {
+	this.putLightState(light, { 'bri': v }, function (response) {
 		// ...
 	})
 	callback(null);
@@ -447,7 +447,7 @@ deconzPlatform.prototype.getColorTemperature = function (light, callback) {
 
 deconzPlatform.prototype.setColorTemperature = function (val, light, callback) {
 	light.state.ct = vale;
-    this.putLightState(light, { "ct": val }, function (response) {
+    this.putLightState(light, { 'ct': val }, function (response) {
 		// ...
 	})
 	callback(null);
